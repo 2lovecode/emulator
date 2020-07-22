@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"emulator/components/ic"
+)
 
 func main() {
-	fmt.Println("hello")
+	demo := ic.NewDemoCircuit()
+	demo.Process()
 }
