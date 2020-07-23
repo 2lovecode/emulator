@@ -12,6 +12,15 @@ type Wire struct {
 	gateL []GateID
 }
 
+func NewWire(cap int64) *Wire {
+	wire := &Wire{
+		state: false,
+		gateL: make([]GateID, cap),
+	}
+
+	return wire
+}
+
 // Wire - start
 func (w *Wire) SetState(state State) {
 	w.state = state
