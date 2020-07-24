@@ -11,28 +11,34 @@ type Circuit struct {
 	gateQueue *linkedhashset.Set
 }
 
+// AddInput	添加输入组件
 func (ic *Circuit) AddInput() (id basic.GateID) {
 	in := basic.NewInputGate()
 	id = basic.GateID(uint64(len(ic.gateTable)) + 1)
+	in.SetID(id)
 	ic.gateTable[id] = in
 	return
 }
 
+// AddOutput 添加输出组件
 func (ic *Circuit) AddOutput() (id basic.GateID) {
 	out := basic.NewOutputGate()
-
 	id = basic.GateID(uint64(len(ic.gateTable)) + 1)
+	out.SetID(id)
 	ic.gateTable[id] = out
 	return
 }
 
+// AddGate 添加组件公共方法
 func (ic *Circuit) AddGate(gateType basic.GateType) (id basic.GateID) {
 	gate := basic.NewGate(gateType, 2, 1)
 	id = basic.GateID(uint64(len(ic.gateTable)) + 1)
+	gate.SetID(id)
 	ic.gateTable[id] = gate
 	return
 }
 
+// SetInputState 给输入组件设置输入信号
 func (ic *Circuit) SetInputState(id basic.GateID, state basic.State) {
 	if in, ok := ic.gateTable[id].(*basic.InputGate); ok {
 		in.State = state
@@ -40,25 +46,28 @@ func (ic *Circuit) SetInputState(id basic.GateID, state basic.State) {
 	ic.gateQueue.Add(id)
 }
 
-
-func (ic *Circuit) SetOutputListener(id basic.GateID, listener basic.OutputListener) {
+// SetOutputListener 给输出组件设置监听者
+func (ic *Circuit) SetOutputListener(id basic.GateID, listener basic.IOutputListener) {
 	out := ic.gateTable[id].(*basic.OutputGate)
 	out.SetListener(listener)
 }
 
+// RemoveGate 移除组件 TODO
 func (ic *Circuit) RemoveGate(id basic.GateID) {
 
 }
 
+// ConnectGate 定义组件之间连接
 func (ic *Circuit) ConnectGate(srcGateID basic.GateID, srcOutPin basic.Pin, dstGateID basic.GateID, dstInPin basic.Pin) {
 	newWire := basic.NewWire(2)
+	newWire.AddGate(dstGateID)
 	id := basic.WireID(uint64(len(ic.wireTable)) + 1)
 	ic.wireTable[id] = newWire
 	ic.gateTable[srcGateID].SetWire(srcOutPin, id, basic.PinTypeOUT)
 	ic.gateTable[dstGateID].SetWire(dstInPin, id, basic.PinTypeIN)
 }
 
-
+// Process 执行
 func (ic *Circuit) Process() {
 	gateQueue := ic.gateQueue
 
@@ -81,6 +90,7 @@ func (ic *Circuit) Process() {
 				wireIDL = gate.GetEvaluator().Evaluate(basic.EvaluatorParams{
 					Gate:      gate,
 					WireTable: ic.wireTable,
+					Listener: gate.(*basic.OutputGate).Listener,
 				})
 			default:
 				wireIDL = gate.GetEvaluator().Evaluate(basic.EvaluatorParams{
@@ -90,7 +100,9 @@ func (ic *Circuit) Process() {
 			}
 
 			if wireIDL != nil {
-				wireQueue.Add(wireIDL)
+				for _, wireID := range wireIDL {
+					wireQueue.Add(wireID)
+				}
 			}
 		})
 		gateQueue.Clear()
@@ -98,15 +110,18 @@ func (ic *Circuit) Process() {
 		wireQueue.Each(func (index int, value interface{}) {
 			wireID := value.(basic.WireID)
 			for _, gateID := range ic.wireTable[wireID].GetAllGate() {
-				if ic.gateTable[gateID].HasWire(wireID, basic.PinTypeIN) {
+				tGate := ic.gateTable[gateID]
+				if tGate != nil && tGate.HasWire(wireID, basic.PinTypeIN){
 					gateQueue.Add(gateID)
 				}
 			}
 		})
 		wireQueue.Clear()
 	}
+
 }
 
+// NewCircuit 新建集成电路
 func NewCircuit() *Circuit {
 	ic := &Circuit{
 		wireTable: make(map[basic.WireID]basic.IWire, 10),

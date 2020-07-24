@@ -3,6 +3,7 @@ package main
 import (
 	"emulator/components/basic"
 	"emulator/components/ic"
+	"fmt"
 )
 
 func main() {
@@ -30,5 +31,16 @@ func main() {
 	icDemo.SetInputState(c, true)
 	icDemo.SetInputState(d, false)
 
+	listener := basic.NewOutputListener(1)
+	icDemo.SetOutputListener(h, listener)
+
 	icDemo.Process()
+
+	fmt.Println(listener.GetAll())
+
+	icDemo.SetInputState(a, true)
+	icDemo.Process()
+
+
+	fmt.Println(listener.GetAll())
 }

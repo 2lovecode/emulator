@@ -22,6 +22,8 @@ type PinType uint16
 
 
 type IGate interface {
+	SetID(id GateID)
+	GetID() GateID
 	SetWire(pin Pin, id WireID, pinType PinType)
 	GetWire(pin Pin, pinType PinType) (id WireID)
 	GetAllWire(pinType PinType) (idL map[Pin]WireID)
@@ -32,6 +34,7 @@ type IGate interface {
 }
 
 type Gate struct {
+	id 	GateID
 	GType 	GateType
 	InWireL map[Pin]WireID
 	OutWireL map[Pin]WireID
@@ -43,13 +46,10 @@ type InputGate struct {
 	State State
 }
 
-type OutputListener interface {
-	OnUpdate(state State)
-}
 
 type OutputGate struct {
 	Gate
-	listener OutputListener
+	Listener IOutputListener
 }
 
 func NewGate(gateType GateType, inCap int, outCap int) *Gate {
@@ -88,12 +88,19 @@ func NewInputGate() *InputGate {
 func NewOutputGate() *OutputGate {
 	out := &OutputGate{
 		Gate:     *NewGate(GateTypeOutput, 1, 1),
-		listener: nil,
+		Listener: nil,
 	}
 	return out
 }
 
 // Gate - start
+func (g *Gate) SetID(id GateID) {
+	g.id = id
+}
+func (g *Gate) GetID() GateID {
+	return g.id
+}
+
 func (g *Gate) SetWire(pin Pin, id WireID, pinType PinType) {
 	switch pinType {
 	case PinTypeIN:
@@ -117,6 +124,7 @@ func (g *Gate) GetAllWire(pinType PinType) (idL map[Pin]WireID) {
 	case PinTypeIN:
 		idL =  g.InWireL
 	case PinTypeOUT:
+		idL = g.OutWireL
 	default:
 		idL = g.OutWireL
 	}
@@ -158,6 +166,6 @@ func (g *Gate) GetGateType() (gType GateType) {
 }
 // Gate - end
 
-func (og *OutputGate) SetListener(listener OutputListener) {
-	og.listener = listener
+func (og *OutputGate) SetListener(listener IOutputListener) {
+	og.Listener = listener
 }

@@ -1,11 +1,11 @@
 package basic
 
-import "fmt"
 
 type EvaluatorParams struct {
 	Gate IGate
 	WireTable map[WireID]IWire
 	GateState State
+	Listener IOutputListener
 }
 
 type IGateEvaluator interface {
@@ -28,9 +28,9 @@ func (eval *InputGateEvaluator) Evaluate(params EvaluatorParams) []WireID {
 }
 
 func (eval *OutputGateEvaluator) Evaluate(params EvaluatorParams) []WireID {
-	for _, wID := range params.Gate.GetAllWire(PinTypeIN) {
-		fmt.Println(params.WireTable[wID].GetState())
-	}
+	wID := params.Gate.GetWire(0, PinTypeIN)
+	state := params.WireTable[wID].GetState()
+	params.Listener.OnUpdate(params.Gate.GetID(), state)
 	return nil
 }
 
