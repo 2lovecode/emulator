@@ -1,30 +1,30 @@
 package basic
 
 type IOutputListener interface {
-	OnUpdate(gID GateID, state State)
-	GetAll() map[GateID]State
-	Get(id GateID) State
+	OnUpdate(gID GateID, level Level)
+	GetAll() map[GateID]Level
+	Get(id GateID) Level
 }
 
 type OutputListener struct {
-	Result map[GateID]State
+	Result map[GateID]Level
 }
 
 func NewOutputListener(cap int) *OutputListener {
 	out := &OutputListener{
-		Result: make(map[GateID]State, cap),
+		Result: make(map[GateID]Level, cap),
 	}
 	return out
 }
 
-func (listener *OutputListener) OnUpdate(gID GateID, state State) {
-	listener.Result[gID] = state
+func (listener *OutputListener) OnUpdate(gID GateID, level Level) {
+	listener.Result[gID] = level
 }
 
-func (listener *OutputListener) GetAll() map[GateID]State {
+func (listener *OutputListener) GetAll() map[GateID]Level {
 	return listener.Result
 }
 
-func (listener *OutputListener) Get(gID GateID) (state State) {
+func (listener *OutputListener) Get(gID GateID) (level Level) {
 	return listener.Result[gID]
 }
