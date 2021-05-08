@@ -9,11 +9,18 @@ type EvaluatorOptions struct{
 type EvaluationOption func(opts *EvaluatorOptions)
 
 type EvaluatorPayload struct {
+	IsOutput bool
+	GateSignals []EvaluatorGateSignal
 	WireSignals []EvaluatorWireSignal
 }
 
 type EvaluatorWireSignal struct {
 	ID WireID
+	Level Level
+}
+
+type EvaluatorGateSignal struct {
+	ID GateID
 	Level Level
 }
 

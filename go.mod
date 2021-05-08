@@ -1,5 +1,8 @@
 module emulator
 
-go 1.13
+go 1.15
 
-require github.com/emirpasic/gods v1.12.0
+require (
+	github.com/emirpasic/gods v1.12.0
+	github.com/smartystreets/goconvey v1.6.4
+)

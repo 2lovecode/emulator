@@ -2,7 +2,6 @@ package gate
 
 import (
 	"emulator/components/basic"
-	"fmt"
 )
 
 type Output struct {
@@ -25,11 +24,15 @@ func (oe *OutputEvaluator) Evaluate(opts ...basic.EvaluationOption) *basic.Evalu
 	for _, o := range opts {
 		o(&opt)
 	}
-	for eachPin, each := range opt.G.GetAllInWire() {
-		fmt.Printf("门: %d 引脚: %d 输出电平: %d\n", opt.G.GetIdentity(), eachPin, basic.GetLevelFromEvaluatorWireSignal(opt.InWireSignals, each))
+	return &basic.EvaluatorPayload{
+		IsOutput:    true,
+		GateSignals: []basic.EvaluatorGateSignal{
+			{
+				ID: opt.G.GetIdentity(),
+				Level: basic.GetLevelFromEvaluatorWireSignal(opt.InWireSignals, opt.G.GetInWire(0)),
+			},
+		},
 	}
-
-	return &basic.EvaluatorPayload{}
 }
 
 func newOutputEvaluator() *OutputEvaluator {

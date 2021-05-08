@@ -7,15 +7,17 @@ import (
 )
 
 type DemoIC struct {
-	inPins map[basic.Pin]basic.GateID
-	outPins map[basic.Pin]basic.GateID
 	icBoard *board.Circuit
 }
 
 func (ic *DemoIC) Input(inputs ...InputSignal) {
 	for _, in := range inputs {
-		ic.icBoard.SetInputLevel(ic.inPins[in.Pin], in.Level)
+		ic.icBoard.SetLevel(in.Pin, in.Level)
 	}
+}
+
+func (ic *DemoIC) Output(pin basic.Pin) basic.Level {
+	return ic.icBoard.GetLevel(pin)
 }
 
 func (ic *DemoIC) Process() {
@@ -24,16 +26,16 @@ func (ic *DemoIC) Process() {
 
 func NewDemoIC() *DemoIC {
 	icDemo := board.NewCircuit()
-	a := icDemo.AddGate(gate.NewInput())
-	b := icDemo.AddGate(gate.NewInput())
-	c := icDemo.AddGate(gate.NewInput())
-	d := icDemo.AddGate(gate.NewInput())
+	a := icDemo.AddInputGate(0, gate.NewInput())
+	b := icDemo.AddInputGate(1, gate.NewInput())
+	c := icDemo.AddInputGate(2, gate.NewInput())
+	d := icDemo.AddInputGate(3, gate.NewInput())
 
 	A := icDemo.AddGate(gate.NewAnd())
 	B := icDemo.AddGate(gate.NewAnd())
 	C := icDemo.AddGate(gate.NewNot())
 	D := icDemo.AddGate(gate.NewOr())
-	h := icDemo.AddGate(gate.NewOutput())
+	h := icDemo.AddOutputGate(0, gate.NewOutput())
 
 
 	icDemo.ConnectGate(a, 0, A, 0)
@@ -47,15 +49,6 @@ func NewDemoIC() *DemoIC {
 
 	return &DemoIC{
 		icBoard:icDemo,
-		inPins: map[basic.Pin]basic.GateID{
-			0: a,
-			1: b,
-			2: c,
-			3: d,
-		},
-		outPins: map[basic.Pin]basic.GateID{
-			0: h,
-		},
 	}
 }
 
